@@ -11,8 +11,9 @@ The idea here is to build a script for Firebot that can communicate with Twitch 
 ### Starter Firebot Custom Script in Typescript
 
 #### Setup
-1. Create a new repo based off this template (Click "Use this Template" above) or simply fork it
+1. Clone this repo.
 2. `npm install`
+3. Start development in your favoured editor.
 
 #### Building
 Dev:
