@@ -1,18 +1,20 @@
 const jwt = require('jsonwebtoken')
 
+
 /**
  * Helper class for authentication against an EBS service. Allows the storage of a token to be accessed across componenents. 
  */
 export default class Authentication{
+    state: { token: any; opaque_id: any; user_id: any; isMod: boolean; role: string }
 
-    constructor(token, opaque_id){
+    constructor(token: any, opaque_id: any){
         this.state={
             token,
             opaque_id,
             user_id:false,
             isMod:false,
             role:""
-        }
+        } 
     }
 
     // this does guarantee the user is a moderator- this is fairly simple to bypass - so pass the JWT and verify
@@ -31,7 +33,7 @@ export default class Authentication{
     }
 
     // set the token in the Authentication componenent state
-    setToken(token,opaque_id){
+    setToken(token: string,opaque_id: string){
         let mod = false
         let role = ""
         let user_id = ""
@@ -76,7 +78,7 @@ export default class Authentication{
      * 
      */
 
-    makeCall(url, method="GET"){
+    makeCall(url: RequestInfo, method="GET"){
         return new Promise((resolve, reject)=>{
             if(this.isAuthenticated()){
                 let headers={
@@ -97,3 +99,5 @@ export default class Authentication{
         })
     }
 }
+
+export { Authentication };
