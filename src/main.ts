@@ -2,7 +2,8 @@ import { Firebot } from "firebot-custom-scripts-types";
 import Authentication from './Authentication/Authentication';
 
 interface Params {
-  message: string;
+  streamer: string; 
+  token: string;
 }
 
 const script: Firebot.CustomScript<Params> = {
@@ -17,21 +18,28 @@ const script: Firebot.CustomScript<Params> = {
   },
   getDefaultParameters: () => {
     return {
-      message: {
+      streamer: {
         type: "string",
-        default: "Hello World!",
-        description: "Message",
-        secondaryDescription: "Enter a message here",
+        default: "Streamer Name",
+        description: "Streamer Name",
+        secondaryDescription: "Enter your twitch Streamer Name here",
+      },
+      token: {
+        type: "string",
+        default: "",
+        description: "Token",
+        secondaryDescription:"the Private key from the extension you have created",
       },
     };
   },
   run: (runRequest) => {
-    
-    let auth = new Authentication("sample","userid");
-    
+
+    let auth = new Authentication(runRequest.parameters.token, "$userId[$streamer]");
     const { logger } = runRequest.modules;
-    logger.info(auth.state.token);
-    logger.info(runRequest.parameters.message);
+    logger.info(auth.state.token); 
+    logger.info(auth.state.opaque_id);
+    logger.info(runRequest.parameters.streamer);
+
   },
 };
 
