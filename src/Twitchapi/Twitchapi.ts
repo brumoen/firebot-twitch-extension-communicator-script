@@ -4,12 +4,16 @@ import fetch from "node-fetch";
 import * as jwt from 'jsonwebtoken';
 type CommandWithDescription = CommandDefinition & { description: string }
 
-export async function getEndPoint(key:string,client_id: string, broadcaster_id: string, runRequest: RunRequest<{ client_Id: string; }>, localData: any ) {
+export async function getEndPoint(key: string, client_id: string, broadcaster_id: string, runRequest: RunRequest<{ client_Id: string; }>, localData: any) {
     let data;
     let localCommands: commands[] = [];
+    runRequest.modules.logger.warn("external");
+    runRequest.modules.logger.warn(data);
+    let receivedCommands = [];
+    let content: content[] = [];
     try {
         runRequest.modules.logger.warn(client_id);
-        const token = generateHS256Token(role.external, broadcaster_id,key, runRequest);
+        const token = generateHS256Token(broadcaster_id, role.external, broadcaster_id, key, runRequest);
         runRequest.modules.logger.warn(token);
         const response = await fetch('https://api.twitch.tv/helix/extensions/configurations?extension_id=' + client_id + '&segment=' + segment.broadcaster + '&broadcaster_id=' + broadcaster_id, {
             method: 'get',
@@ -24,14 +28,11 @@ export async function getEndPoint(key:string,client_id: string, broadcaster_id: 
         runRequest.modules.logger.error(error);
     }
 
-    runRequest.modules.logger.warn("external");
-    runRequest.modules.logger.warn(data);
-    let receivedCommands = [];
-    let content: content[] = [];
     data.data.forEach((d: responceSegment) => {
         content = JSON.parse(d.content);
         content.forEach((command: content) => receivedCommands.push(command))
     })
+    runRequest.modules.logger.warn("internal");
 
     const arrayOfCustomCommands = Object.keys(localData.customCommands).map((guid) => {
         return localData.customCommands[guid] as CommandWithDescription;
@@ -49,14 +50,14 @@ export async function getEndPoint(key:string,client_id: string, broadcaster_id: 
 
     data.data[0].content = JSON.stringify(localCommands)
     data.data[0].extension_id = client_id;
-    runRequest.modules.logger.info(JSON.stringify(putEndPoint(key,client_id, runRequest.firebot.accounts.streamer.userId, data.data[0], runRequest).toString()));
+    runRequest.modules.logger.info(JSON.stringify(putEndPoint(key, client_id, runRequest.firebot.accounts.streamer.userId, data.data[0], runRequest).toString()));
     return data;
 }
 
-export async function putEndPoint(key:string,client_id: string, broadcaster_id: string, body: commands[], runRequest: RunRequest<{client_Id: string;}>) {
+export async function putEndPoint(key: string, client_id: string, broadcaster_id: string, body: commands[], runRequest: RunRequest<{ client_Id: string; }>) {
     let data;
     try {
-        const token = generateHS256Token(role.external, broadcaster_id, key, runRequest);
+        const token = generateHS256Token(broadcaster_id, role.external, broadcaster_id, key, runRequest);
         runRequest.modules.logger.warn(JSON.stringify(body));
         const response = await fetch('https://api.twitch.tv/helix/extensions/configurations', {
             method: 'put',
@@ -70,15 +71,15 @@ export async function putEndPoint(key:string,client_id: string, broadcaster_id: 
         data = await response.json();
     } catch (error) {
         runRequest.modules.logger.error(error);
-
-        
     }
+    runRequest.modules.logger.warn(data);
     return data;
 }
 
-export function generateHS256Token(role: role | undefined, user_id: string | undefined, key:string, runRequest: RunRequest<{client_Id: string;}>,) {
+export function generateHS256Token(channel_id: string | undefined, role: role | undefined, user_id: string | undefined, key: string, runRequest: RunRequest<{ client_Id: string; }>,) {
+
     const secret = Buffer.from(key, 'base64');
-    var date = new Date();
+    var date = new Date(); // Now
     const expreiationDate = date.getTime() + 30 * 24 * 60 * 60;
     const tokenPayload: Payload = {
         exp: expreiationDate,
