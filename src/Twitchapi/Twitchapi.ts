@@ -28,7 +28,7 @@ export async function getEndPoint(key: string, client_id: string, broadcaster_id
     } catch (error) {
         runRequest.modules.logger.error(error);
     }
-    runRequest.modules.logger.warn(data.toString());
+    runRequest.modules.logger.warn(JSON.stringify(data));
 
     if(data == null || data == undefined){
         this.data as responseData;
@@ -54,9 +54,13 @@ export async function getEndPoint(key: string, client_id: string, broadcaster_id
         }
     });
 
+    runRequest.modules.logger.warn('build string data' + JSON.stringify(data));
     data.data[0].content = JSON.stringify(localCommands)
     data.data[0].extension_id = client_id;
-    runRequest.modules.logger.warn(data.toString());
+    data.data[0].broadcaster_id = broadcaster_id;
+    data.data[0].segment = segment.broadcaster ;
+    data.data[0].version = 1.0;
+    runRequest.modules.logger.warn(JSON.stringify(data));
     runRequest.modules.logger.info(JSON.stringify(putEndPoint(key, client_id, runRequest.firebot.accounts.streamer.userId, data.data[0], runRequest).toString()));
     return data;
 }
@@ -79,7 +83,7 @@ export async function putEndPoint(key: string, client_id: string, broadcaster_id
     } catch (error) {
         runRequest.modules.logger.error(error);
     }
-    runRequest.modules.logger.warn(data);
+    runRequest.modules.logger.warn(JSON.stringify(data));
     return data;
 }
 
@@ -93,11 +97,10 @@ export function generateHS256Token(channel_id: string | undefined, role: role | 
         role: role,
         user_id: user_id
     };
-
+    runRequest.modules.logger.warn('token plyload');
     runRequest.modules.logger.info(JSON.stringify(tokenPayload));
     try {
         const signedToken = jwt.sign(tokenPayload, secret);
-        runRequest.modules.logger.info(signedToken + "token should here");
         return signedToken
     } catch (error) {
         runRequest.modules.logger.error(error);
@@ -128,7 +131,7 @@ export type content = {
 
 export type responseSegment = {
     extension_id: string | undefined;
-    broadcaster_id: number | undefined;
+    broadcaster_id: string | undefined;
     segment: segment | undefined;
     version: number | undefined;
     content: string | undefined;
