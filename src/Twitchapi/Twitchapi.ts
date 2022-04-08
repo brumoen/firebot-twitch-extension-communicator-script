@@ -2,13 +2,13 @@ import { RunRequest } from "firebot-custom-scripts-types";
 import { CommandDefinition } from "firebot-custom-scripts-types/types/modules/command-manager";
 import fetch from "node-fetch";
 import * as jwt from 'jsonwebtoken';
+import { join } from "path";
 type CommandWithDescription = CommandDefinition & { description: string }
 
 export async function getEndPoint(key: string, client_id: string, broadcaster_id: string, runRequest: RunRequest<{ client_Id: string; }>, localData: any) {
-    let data;
+    let data: responseData;
     let localCommands: commands[] = [];
     runRequest.modules.logger.warn("external");
-    runRequest.modules.logger.warn(data);
     let receivedCommands = [];
     let content: content[] = [];
     try {
@@ -23,12 +23,18 @@ export async function getEndPoint(key: string, client_id: string, broadcaster_id
                 'Client-Id': client_id
             }
         });
-        data = await response.json();
+       data = await response.json();
+       
     } catch (error) {
         runRequest.modules.logger.error(error);
     }
+    runRequest.modules.logger.warn(data.toString());
 
-    data.data.forEach((d: responceSegment) => {
+    if(data == null || data == undefined){
+        this.data as responseData;
+    }
+
+    data.data.forEach((d: responseSegment) => {
         content = JSON.parse(d.content);
         content.forEach((command: content) => receivedCommands.push(command))
     })
@@ -50,11 +56,12 @@ export async function getEndPoint(key: string, client_id: string, broadcaster_id
 
     data.data[0].content = JSON.stringify(localCommands)
     data.data[0].extension_id = client_id;
+    runRequest.modules.logger.warn(data.toString());
     runRequest.modules.logger.info(JSON.stringify(putEndPoint(key, client_id, runRequest.firebot.accounts.streamer.userId, data.data[0], runRequest).toString()));
     return data;
 }
 
-export async function putEndPoint(key: string, client_id: string, broadcaster_id: string, body: commands[], runRequest: RunRequest<{ client_Id: string; }>) {
+export async function putEndPoint(key: string, client_id: string, broadcaster_id: string, body: responseSegment, runRequest: RunRequest<{ client_Id: string; }>) {
     let data;
     try {
         const token = generateHS256Token(broadcaster_id, role.external, broadcaster_id, key, runRequest);
@@ -119,7 +126,7 @@ export type content = {
     date: Date | undefined;
 };
 
-export type responceSegment = {
+export type responseSegment = {
     extension_id: string | undefined;
     broadcaster_id: number | undefined;
     segment: segment | undefined;
@@ -127,8 +134,8 @@ export type responceSegment = {
     content: string | undefined;
 };
 
-export type responceData = {
-    data: responceSegment[] | undefined;
+export type responseData = {
+    data: responseSegment[] | undefined;
 };
 
 export enum role {
