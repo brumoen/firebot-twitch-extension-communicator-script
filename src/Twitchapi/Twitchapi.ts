@@ -6,38 +6,52 @@ import { join } from "path";
 type CommandWithDescription = CommandDefinition & { description: string }
 
 export async function getEndPoint(key: string, client_id: string, broadcaster_id: string, runRequest: RunRequest<{ client_Id: string; }>, localData: any) {
-    let data: responseData;
+    let seg: responseSegment = {
+            segment: segment.broadcaster,
+            broadcaster_id: "",
+            content: "[]",
+            version: 1,
+            extension_id: "",
+    };
+
+    let data: responseData = {
+        data: [seg],
+    };
     let localCommands: commands[] = [];
     runRequest.modules.logger.warn("external");
-    let receivedCommands = [];
-    let content: content[] = [];
-    try {
-        runRequest.modules.logger.warn(client_id);
-        const token = generateHS256Token(broadcaster_id, role.external, broadcaster_id, key, runRequest);
-        runRequest.modules.logger.warn(token);
-        const response = await fetch('https://api.twitch.tv/helix/extensions/configurations?extension_id=' + client_id + '&segment=' + segment.broadcaster + '&broadcaster_id=' + broadcaster_id, {
-            method: 'get',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token,
-                'Client-Id': client_id
-            }
-        });
-       data = await response.json();
-       
-    } catch (error) {
-        runRequest.modules.logger.error(error);
-    }
-    runRequest.modules.logger.warn(JSON.stringify(data));
+   // let receivedCommands = [];
+   // let content: content[] = [];
+    // try {
+    //     runRequest.modules.logger.warn(client_id);
+    //     const token = generateHS256Token(broadcaster_id, role.external, broadcaster_id, key, runRequest);
+    //     runRequest.modules.logger.warn(token);
+    //     const response = await fetch('https://api.twitch.tv/helix/extensions/configurations?extension_id=' + client_id + '&segment=' + segment.broadcaster + '&broadcaster_id=' + broadcaster_id, {
+    //         method: 'get',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //             'Authorization': 'Bearer ' + token,
+    //             'Client-Id': client_id
+    //         }
+    //     });
+    //    data = await response.json();
+    //    data=null;
+    // } catch (error) {
+    //     runRequest.modules.logger.error(error);
+    // }
+    // runRequest.modules.logger.warn(JSON.stringify(data));
 
-    if(data == null || data == undefined){
-        this.data as responseData;
-    }
+    // if(data == null || data == undefined){
+    //     this.data as responseData;
+    // }
 
-    data.data.forEach((d: responseSegment) => {
-        content = JSON.parse(d.content);
-        content.forEach((command: content) => receivedCommands.push(command))
-    })
+    // if (data.data == null || data.data == undefined) {
+    //     this.data.data.push("data:");
+    // }
+
+    // data.data.forEach((d: responseSegment) => {
+    //     content = JSON.parse(d.content);
+    //     content.forEach((command: content) => receivedCommands.push(command))
+    // })
     runRequest.modules.logger.warn("internal");
 
     const arrayOfCustomCommands = Object.keys(localData.customCommands).map((guid) => {
@@ -86,6 +100,8 @@ export async function putEndPoint(key: string, client_id: string, broadcaster_id
     runRequest.modules.logger.warn(JSON.stringify(data));
     return data;
 }
+
+
 
 export function generateHS256Token(channel_id: string | undefined, role: role | undefined, user_id: string | undefined, key: string, runRequest: RunRequest<{ client_Id: string; }>,) {
 
