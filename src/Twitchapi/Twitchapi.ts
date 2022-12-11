@@ -68,7 +68,7 @@ export async function getEndPoint(key: string, client_id: string, broadcaster_id
         }
     });
 
-    runRequest.modules.logger.warn('build string data' + JSON.stringify(data));
+    runRequest.modules.logger.warn('build string data ' + JSON.stringify(data));
     data.data[0].content = JSON.stringify(localCommands)
     data.data[0].extension_id = client_id;
     data.data[0].broadcaster_id = broadcaster_id;
@@ -93,7 +93,7 @@ export async function putEndPoint(key: string, client_id: string, broadcaster_id
                 'Client-Id': client_id
             }
         });
-        data = await response.json();
+        data = await response.text();
     } catch (error) {
         runRequest.modules.logger.error(error);
     }
